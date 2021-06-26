@@ -16,37 +16,34 @@ numpy.set_printoptions(precision=3, suppress=True)
 
 #load dataset from *.csv
 heart = pandas.read_csv("dataset/heart.csv")
-heart["sex"] = heart["sex"].map({0:'female', 1:'male'})
-heart = pandas.get_dummies(heart, columns = ["sex"], prefix='', prefix_sep='')
+print(heart)
 
-heart["cp"] = heart["cp"].map({0:'cp type 0', 1:'cp type 1', 2:'cp type 2', 3:'cp_type 3'})
+heart["cp"] = heart["cp"].map({0:'cp type 0', 1:'cp type 1', 2:'cp type 2', 3:'cp_type 3'}) #+3 columns
 heart = pandas.get_dummies(heart, columns = ["cp"], prefix='', prefix_sep='')
+print(heart)
 
-heart["fbs"] = heart["fbs"].map({0:'fasting blood sugar normal', 1:'fasting blood sugar too high'})
-heart = pandas.get_dummies(heart, columns = ["fbs"], prefix='', prefix_sep='')
-
-heart["restecg"] = heart["restecg"].map({0:'normal', 1:'abnormal type 1', 2:'abnormal type 2'})
+heart["restecg"] = heart["restecg"].map({0:'normal', 1:'abnormal type 1', 2:'abnormal type 2'}) #+2 columns
 heart = pandas.get_dummies(heart, columns = ["restecg"], prefix='', prefix_sep='')
+print(heart)
 
-heart["exang"] = heart["exang"].map({0:'absent', 1:'present'})
-heart = pandas.get_dummies(heart, columns = ["exang"], prefix='', prefix_sep='')
-
-heart["slope"] = heart["slope"].map({0:'upsloping', 1:'flat', 2: 'downsloping'})
+heart["slope"] = heart["slope"].map({0:'upsloping', 1:'flat', 2: 'downsloping'}) #+2 columns
 heart = pandas.get_dummies(heart, columns = ["slope"], prefix='', prefix_sep='')
-
-heart["thal"] = heart["thal"].map({0:'passed', 1:'failed', 2:'failed after excersise'})
+print(heart)
+heart["thal"] = heart["thal"].map({0:'passed', 1:'failed', 2:'failed after excersise'}) #+2 columns
 heart = pandas.get_dummies(heart, columns = ["thal"], prefix='', prefix_sep='')
 
-#heart["target"] = heart["target"].map({0:'healthy', 1:'unhealthy'})
-heart = pandas.get_dummies(heart, columns = ["target"], prefix='', prefix_sep='')
+heart = heart.reindex(columns=["age","sex","cp type 0", "cp type 1", "cp type 2", "cp_type 3","trestbps","chol","fbs","normal", "abnormal type 1", "abnormal type 2","thalach","exang","oldpeak","upsloping", "flat", "downsloping","ca","passed", "failed", "failed after excersise","target"])
+
+print(heart)
 heart.tail()
 print(heart)
 
 
-X = pandas.DataFrame(heart.iloc[:, 0:25].values)
-y = heart.iloc[:, 25].values
+X = pandas.DataFrame(heart.iloc[:, 0:22].values)
+y = heart.iloc[:, 22].values
 
-print(X)
+print(y)
+
 
 #onehotencoder = OneHotEncoder()
 
@@ -80,13 +77,13 @@ print(X)
 
 trainX, testX, trainY, testY = train_test_split(X, y, test_size=0.2, random_state = 0)
 
-print(testX)
+#print(testX)
 
 sc = StandardScaler()
 trainX = sc.fit_transform(trainX)
 testX = sc.fit_transform(testX)
 
-print(testX)
+#print(testX)
 
 #initializing ANN
 classifier = Sequential();
@@ -94,7 +91,7 @@ classifier = Sequential();
 #add input layer + first hidden layer 
 #relu - rectifier activation function
 #as many input_dims as independent variables
-classifier.add(Dense(units=18, kernel_initializer = 'uniform', activation='relu', input_dim = 25))
+classifier.add(Dense(units=18, kernel_initializer = 'uniform', activation='relu', input_dim = 22))
 #second hidden layer
 classifier.add(Dense(18, kernel_initializer = 'uniform', activation='relu'))
 #output layer
@@ -105,14 +102,16 @@ classifier.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = [
 classifier.fit(trainX, trainY, batch_size = 10, epochs = 300)
 
 predY = classifier.predict(testX)
+print(numpy.c_[predY, testY])
 predY = (predY > 0.5)
+print(numpy.c_[predY, testY])
 
 cm = confusion_matrix(testY, predY)
 print(cm)
 accuracy_score(testY, predY)
+print(accuracy_score(testY, predY))
 
-
-weights = classifier.layers[0].get_weights()[0];
-biases = classifier.layers[0].get_weights()[1];
-print(weights);
-print(biases);
+#weights = classifier.layers[0].get_weights()[0];
+#biases = classifier.layers[0].get_weights()[1];
+#print(weights);
+#print(biases);
