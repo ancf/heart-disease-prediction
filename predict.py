@@ -2,10 +2,14 @@ import numpy as numpy
 import pandas as pandas
 import tensorflow as tensor
 import keras as keras
+from keras.models import Sequential
+from keras.layers import Dense
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix, accuracy_score
+
 
 #set decimal precission
 numpy.set_printoptions(precision=3, suppress=True)
@@ -33,14 +37,14 @@ heart = pandas.get_dummies(heart, columns = ["slope"], prefix='', prefix_sep='')
 heart["thal"] = heart["thal"].map({0:'passed', 1:'failed', 2:'failed after excersise'})
 heart = pandas.get_dummies(heart, columns = ["thal"], prefix='', prefix_sep='')
 
-heart["target"] = heart["target"].map({0:'healthy', 1:'unhealthy'})
+#heart["target"] = heart["target"].map({0:'healthy', 1:'unhealthy'})
 heart = pandas.get_dummies(heart, columns = ["target"], prefix='', prefix_sep='')
 heart.tail()
 print(heart)
 
 
 X = pandas.DataFrame(heart.iloc[:, 0:25].values)
-y = heart.iloc[:, 25:26].values
+y = heart.iloc[:, 25].values
 
 print(X)
 
@@ -83,3 +87,32 @@ trainX = sc.fit_transform(trainX)
 testX = sc.fit_transform(testX)
 
 print(testX)
+
+#initializing ANN
+classifier = Sequential();
+
+#add input layer + first hidden layer 
+#relu - rectifier activation function
+#as many input_dims as independent variables
+classifier.add(Dense(units=18, kernel_initializer = 'uniform', activation='relu', input_dim = 25))
+#second hidden layer
+classifier.add(Dense(18, kernel_initializer = 'uniform', activation='relu'))
+#output layer
+classifier.add(Dense(1, kernel_initializer = 'uniform', activation='sigmoid'))
+
+classifier.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
+
+classifier.fit(trainX, trainY, batch_size = 10, epochs = 300)
+
+predY = classifier.predict(testX)
+predY = (predY > 0.5)
+
+cm = confusion_matrix(testY, predY)
+print(cm)
+accuracy_score(testY, predY)
+
+
+weights = classifier.layers[0].get_weights()[0];
+biases = classifier.layers[0].get_weights()[1];
+print(weights);
+print(biases);
