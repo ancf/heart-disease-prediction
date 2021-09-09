@@ -75,18 +75,15 @@ def main(argv):
 
    
     heart.tail()
-    print(heart, file=open(ofile, 'w'))
+    print("Input with arguments converted to numerical:", file=open(ofile, 'w'))
+    print(heart, file=open(ofile, 'a'))
 
 
     X = pandas.DataFrame(heart.iloc[:, 0:22].values)
     y = heart.iloc[:, 22].values
-
-   
-
+    
 
     trainX, testX, trainY, testY = train_test_split(X, y, test_size=0.2, random_state = 0)
-
-    #print(testX)
 
     sc = StandardScaler()
     trainX = sc.fit_transform(trainX)
@@ -110,16 +107,20 @@ def main(argv):
 
     classifier.fit(trainX, trainY, batch_size = 10, epochs=int(generations))
 
+    print("Original confucion matrix:", file=open(ofile, 'a'))
     predY = classifier.predict(testX)
     print(numpy.c_[predY, testY], file=open(ofile, 'a'))
+    print("Confusion matrix (rounded):", file=open(ofile, 'a'))
     predY = (predY > 0.5)
     print(numpy.c_[predY, testY], file=open(ofile, 'a'))
 
     cm = confusion_matrix(testY, predY)
+    print("Accuracy score:", file=open(ofile, 'a'))
     print(cm, file=open(ofile, 'a'))
     accuracy_score(testY, predY)
       
     sys.stdout = tmp_output
+    
     print(accuracy_score(testY, predY))
 
     #weights = classifier.layers[0].get_weights()[0];
